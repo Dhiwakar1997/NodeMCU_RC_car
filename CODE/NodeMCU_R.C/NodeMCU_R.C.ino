@@ -1,0 +1,147 @@
+/*************************************************************
+  Download latest Blynk library here:
+    https://github.com/blynkkk/blynk-library/releases/latest
+
+  Blynk is a platform with iOS and Android apps to control
+  Arduino, Raspberry Pi and the likes over the Internet.
+  You can easily build graphic interfaces for all your
+  projects by simply dragging and dropping widgets.
+
+    Downloads, docs, tutorials: http://www.blynk.cc
+    Sketch generator:           http://examples.blynk.cc
+    Blynk community:            http://community.blynk.cc
+    Follow us:                  http://www.fb.com/blynkapp
+                                http://twitter.com/blynk_app
+
+  Blynk library is licensed under MIT license
+  This example code is in public domain.
+
+ *************************************************************
+  This example runs directly on NodeMCU.
+
+  Note: This requires ESP8266 support package:
+    https://github.com/esp8266/Arduino
+
+  Please be sure to select the right NodeMCU module
+  in the Tools -> Board menu!
+
+  For advanced settings please follow ESP examples :
+   - ESP8266_Standalone_Manual_IP.ino
+   - ESP8266_Standalone_SmartConfig.ino
+   - ESP8266_Standalone_SSL.ino
+
+  Change WiFi ssid, pass, and Blynk auth token to run :)
+  Feel free to apply it to any other example. It's simple!
+ *************************************************************/
+
+/* Comment this out to disable prints and save space */
+#define Enable_Acceleration_Pin 4
+
+#define Acceleration_Motor_Positive 0
+
+#define Acceleration_Motor_Negative 2
+
+#define Enable_Steering_Pin 12
+
+#define Steering_Motor_Positive 13
+
+#define Steering_Motor_Negative 15
+
+#define BLYNK_PRINT Serial
+
+#include <ESP8266WiFi.h>
+
+#include <BlynkSimpleEsp8266.h>
+
+// You should get Auth Token in the Blynk App.
+// Go to the Project Settings (nut icon).
+
+char auth[] = "er223r7a44bd44dd8da06acfd632a9xx"; // enter your auth code
+
+// Your WiFi credentials.
+// Set password to "" for open networks.
+char ssid[] = "BeBorn";
+char pass[] = " 121.Catcub";
+int Axis_X = 128, Axis_Y = 128;
+
+void setup()
+{
+  // Debug console
+  Serial.begin(9600);
+
+  Blynk.begin(auth, ssid, pass);
+  pinMode(Enable_Acceleration_Pin, OUTPUT);
+  pinMode(Enable_Steering_Pin, OUTPUT);
+  pinMode(Acceleration_Motor_Positive, OUTPUT);
+  pinMode(Acceleration_Motor_Negative, OUTPUT);
+  pinMode(Steering_Motor_Positive, OUTPUT);
+  pinMode(Steering_Motor_Negative, OUTPUT);
+  // You can also specify server:
+  //Blynk.begin(auth, ssid, pass, "blynk-cloud.com", 80);
+  //Blynk.begin(auth, ssid, pass, IPAddress(192,168,1,100), 8080);
+}
+BLYNK_WRITE(V0) // Widget WRITEs to Virtual Pin V1
+{
+  Axis_X = param.asInt(); // getting first value
+}
+
+BLYNK_WRITE(V3) // Widget WRITEs to Virtual Pin V3
+{
+  Axis_Y = param.asInt(); // getting first value
+}
+
+void control()
+{
+  analogWrite(Enable_Acceleration_Pin, 1025); // Send PWM signal to motor A
+  analogWrite(Enable_Steering_Pin, 1025); // Send PWM signal to motor B
+  if (Axis_X > 190)
+  {
+    digitalWrite(Acceleration_Motor_Positive, HIGH);
+    digitalWrite(Acceleration_Motor_Negative, LOW);
+  }
+  else if (Axis_X < 60)
+  {
+    digitalWrite(Acceleration_Motor_Positive, LOW);
+    digitalWrite(Acceleration_Motor_Negative, HIGH);
+  }
+  if (Axis_Y < 60)
+  {
+    digitalWrite(Steering_Motor_Positive, HIGH);
+    digitalWrite(Steering_Motor_Negative, LOW);
+  }
+  else if (Axis_Y > 190)
+  {
+    digitalWrite(Steering_Motor_Positive, LOW);
+    digitalWrite(Steering_Motor_Negative, HIGH);
+  }
+  if (Axis_X < 190 && Axis_X > 60)
+  {
+    digitalWrite(Acceleration_Motor_Positive, LOW);
+    digitalWrite(Acceleration_Motor_Negative, LOW);
+  }
+  if (Axis_Y < 190 && Axis_Y > 60)
+  {
+    digitalWrite(Steering_Motor_Positive, LOW);
+    digitalWrite(Steering_Motor_Negative, LOW);
+  }
+}
+void val()
+{
+  Serial.print("X1:");
+  Serial.println(Axis_X);
+  Serial.print("Y1:");
+  Serial.println(Axis_Y_Negative);
+  Serial.print("X2:");
+  Serial.println(x2);
+  Serial.print("Axis_Y:");
+  Serial.println(Axis_Y);
+  Serial.print("Z:");
+  Serial.println(z);
+  //delay(500);
+}
+void loop()
+{
+  Blynk.run();
+  val();
+  control();
+}
